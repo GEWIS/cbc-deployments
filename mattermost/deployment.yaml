@@ -14,36 +14,37 @@ spec:
       labels:
         io.kompose.service: mattermost
     spec:
-      securityContext:
-        fsGroup: 2000
-        fsGroupChangePolicy: OnRootMismatch
       # Team Edition has no SSO; the mattermost-oidc plugin adds Keycloak login. On every start
-      # Mattermost wipes its local plugin dirs and reinstalls the bundles from <data>/plugins/,
-      # so placing the pinned bundle there is all it takes to install or upgrade it.
+      # Mattermost wipes its local plugin dirs and reinstalls the bundles from plugins/ in the
+      # file store (S3), so placing the pinned bundle there is all it takes to install or upgrade it.
       # The plugin only discovers Keycloak when it activates and never retries, so Mattermost
       # must not start while Keycloak is unreachable.
       initContainers:
         - name: oidc-plugin
           image: curlimages/curl:8.22.0
           imagePullPolicy: IfNotPresent
-          securityContext:
-            runAsUser: 2000
-            runAsGroup: 2000
           command:
             - sh
             - -euc
             - |
-              bundle=/mattermost/data/plugins/mattermost-oidc.tar.gz
-              mkdir -p "${bundle%/*}"
-              if ! { [ -f "$bundle" ] && echo "$PLUGIN_SHA256  $bundle" | sha256sum -c -s; }; then
-                curl -fsSL -o "$bundle.tmp" "$PLUGIN_URL"
-                echo "$PLUGIN_SHA256  $bundle.tmp" | sha256sum -c -
-                mv "$bundle.tmp" "$bundle"
+              s3() {
+                curl -fs --aws-sigv4 "aws:amz:$MM_FILESETTINGS_AMAZONS3REGION:s3" \
+                  --user "$MM_FILESETTINGS_AMAZONS3ACCESSKEYID:$MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY" \
+                  "$@" "https://$MM_FILESETTINGS_AMAZONS3ENDPOINT/$MM_FILESETTINGS_AMAZONS3BUCKET/plugins/mattermost-oidc.tar.gz"
+              }
+              bundle=/tmp/mattermost-oidc.tar.gz
+              if ! { s3 -o "$bundle" && echo "$PLUGIN_SHA256  $bundle" | sha256sum -c -s; }; then
+                curl -fsSL -o "$bundle" "$PLUGIN_URL"
+                echo "$PLUGIN_SHA256  $bundle" | sha256sum -c -
+                s3 -S -T "$bundle"
               fi
               until curl -fsS -o /dev/null "$OIDC_ISSUER/.well-known/openid-configuration"; do
                 echo "==> waiting for $OIDC_ISSUER"
                 sleep 5
               done
+          envFrom:
+            - secretRef:
+                name: mattermost-s3
           env:
             - name: PLUGIN_URL
               value: https://github.com/server-camp/mattermost-oidc-plugin/releases/download/v0.6.1/mattermost-oidc-0.6.1.tar.gz
@@ -52,9 +53,9 @@ spec:
             # Must match IssuerURL in MM_PLUGINSETTINGS_PLUGINS below.
             - name: OIDC_ISSUER
               value: https://auth.gewis.nl/realms/GEWISWG
-          volumeMounts:
-            - mountPath: /mattermost/data
-              name: data
+            # Must match MM_FILESETTINGS_AMAZONS3ENDPOINT below.
+            - name: MM_FILESETTINGS_AMAZONS3ENDPOINT
+              value: s3.gewis.nl
       containers:
         - name: mattermost
           image: mattermost/mattermost-team-edition:11.11.1
@@ -62,6 +63,10 @@ spec:
           envFrom:
             - secretRef:
                 name: mattermost-secrets
+            - secretRef:
+                name: mattermost-s3
+            - secretRef:
+                name: mattermost-db
           env:
             - name: TZ
               value: Europe/Amsterdam
@@ -74,6 +79,12 @@ spec:
               value: https://mattermost.gewis.nl
             - name: MM_SERVICESETTINGS_TRUSTEDPROXYIPHEADER
               value: X-Forwarded-For X-Real-IP
+            - name: MM_FILESETTINGS_DRIVERNAME
+              value: amazons3
+            - name: MM_FILESETTINGS_AMAZONS3ENDPOINT
+              value: s3.gewis.nl
+            - name: MM_FILESETTINGS_AMAZONS3SSL
+              value: 'true'
             - name: MM_LOGSETTINGS_ENABLEFILE
               value: 'false'
             - name: MM_LOGSETTINGS_ENABLEDIAGNOSTICS
@@ -140,17 +151,10 @@ spec:
             failureThreshold: 5
             periodSeconds: 30
             timeoutSeconds: 10
-          volumeMounts:
-            - mountPath: /mattermost/data
-              name: data
       dnsConfig:
         options:
           - name: ndots
             value: '1'
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: data
 ---
 apiVersion: apps/v1
 kind: Deployment

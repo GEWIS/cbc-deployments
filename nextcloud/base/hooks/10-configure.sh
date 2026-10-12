@@ -49,12 +49,9 @@ occ app:install groupfolders || occ app:enable groupfolders
 # it applies to every such folder. Per-folder overrides in the admin UI still win.
 occ config:system:set groupfolders.quota.default --type=integer --value=2147483648 # 2 GiB
 
-# Apps on top of the defaults.
-for app in guests integration_overleaf twofactor_webauthn user_migration; do
-  occ app:install "$app" || occ app:enable "$app"
-done
-occ config:app:set integration_overleaf overleaf_server --value='https://latex.gewis.nl'
-
+# No sharing at all ("Allow apps to use the Share API" off): files are shared through
+# team folders only, whose membership comes from the Keycloak FILES-datas groups.
+occ config:app:set core shareapi_enabled --value=no
 occ config:app:set core shareapi_allow_resharing --value=no
 occ config:app:set richdocuments doc_format --value=ooxml
 occ config:app:set privacy readableLocation --value=nl

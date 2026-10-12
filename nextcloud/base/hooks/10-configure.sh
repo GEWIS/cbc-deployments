@@ -66,11 +66,11 @@ occ config:system:set config_preset --type=integer --value=3
 theme() {
   [ "$(occ config:app:get theming "$1" 2>/dev/null)" = "$2" ] || occ theming:config "$1" "$2"
 }
-theme name 'GEWIS Cloud'
+theme name "$THEMING_NAME"
 theme slogan 'The GEWIS Cloud Environment'
 theme url "${OVERWRITECLIURL%/}/"
-theme primary_color '#D40000'
-theme background_color '#D40000'
+theme primary_color "$THEMING_COLOR"
+theme background_color "$THEMING_COLOR"
 # A plain background colour instead of an image.
 [ "$(occ config:app:get theming backgroundMime 2>/dev/null)" = backgroundColor ] ||
   occ theming:config background backgroundColor

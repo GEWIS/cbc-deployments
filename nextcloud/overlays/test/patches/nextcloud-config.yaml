@@ -9,3 +9,5 @@ data:
   OVERWRITEHOST: nextcloud.test.gewis.nl
   OVERWRITECLIURL: https://nextcloud.test.gewis.nl
   OIDC_CLIENT_ID: nextcloud-test
+  THEMING_NAME: GEWIS Cloud (test)
+  THEMING_COLOR: "#099412"

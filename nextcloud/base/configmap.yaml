@@ -42,4 +42,8 @@ data:
   MAIL_FROM_ADDRESS: cloud
   MAIL_DOMAIN: gewis.nl
 
+  # Theming, applied by hooks/10-configure.sh; overlays may override.
+  THEMING_NAME: GEWIS Cloud
+  THEMING_COLOR: "#D40000"
+
   TZ: Europe/Amsterdam

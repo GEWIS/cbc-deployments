@@ -46,10 +46,7 @@ spec:
             - name: SMTP_FROM
               value: svc-kaneo-prod@gewis.nl
             - name: S3_ENDPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: kaneo-s3
-                  key: S3_ENDPOINT
+              value: https://s3.gewis.nl
             - name: S3_BUCKET
               valueFrom:
                 secretKeyRef:

@@ -1,0 +1,3 @@
+# Flux leaves image files (*.png, *.jpg, ...) out of the source artifact by default.
+# The Nextcloud theming images are needed by kustomize for the nextcloud-theming ConfigMap.
+!nextcloud/base/theming/*.png

@@ -7,7 +7,8 @@ data:
   # Per-environment keys are added by overlays/<env>/patches/nextcloud-config.yaml:
   # POSTGRES_DB, POSTGRES_USER, NEXTCLOUD_TRUSTED_DOMAINS, OVERWRITEHOST,
   # OVERWRITECLIURL, OIDC_CLIENT_ID (and OBJECTSTORE_S3_* in production).
-  # Secrets (passwords, OIDC client secret) live in the nextcloud-secrets SealedSecret.
+  # Secrets (passwords, OIDC client secret, SMTP login) live in the nextcloud-secrets
+  # SealedSecret.
 
   # Database (credentials in nextcloud-secrets)
   POSTGRES_HOST: pg01.db.gewis.nl:5432
@@ -30,5 +31,15 @@ data:
 
   # Redis (password in nextcloud-secrets)
   REDIS_HOST: redis
+
+  # Outgoing mail, read by the image's config/smtp.config.php (active only when
+  # SMTP_HOST, MAIL_FROM_ADDRESS and MAIL_DOMAIN are all set). SMTP_NAME and
+  # SMTP_PASSWORD come from nextcloud-secrets. These override mail settings saved in
+  # the admin UI. Port 587 with SMTP_SECURE unset means STARTTLS.
+  SMTP_HOST: smtp.gewis.nl
+  SMTP_PORT: "587"
+  SMTP_AUTHTYPE: LOGIN
+  MAIL_FROM_ADDRESS: cloud
+  MAIL_DOMAIN: gewis.nl
 
   TZ: Europe/Amsterdam

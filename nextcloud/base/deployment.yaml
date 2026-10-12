@@ -73,6 +73,10 @@ spec:
               name: data
             - mountPath: /docker-entrypoint-hooks.d/before-starting
               name: hooks
+            # Theming images, uploaded by the hook.
+            - mountPath: /theming
+              name: theming
+              readOnly: true
         - name: cron
           image: nextcloud:34.0.4-apache
           imagePullPolicy: IfNotPresent
@@ -130,6 +134,9 @@ spec:
           configMap:
             name: nextcloud-scripts
             defaultMode: 0755
+        - name: theming
+          configMap:
+            name: nextcloud-theming
 ---
 apiVersion: apps/v1
 kind: Deployment

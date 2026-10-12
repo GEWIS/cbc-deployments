@@ -49,6 +49,44 @@ occ app:install groupfolders || occ app:enable groupfolders
 # it applies to every such folder. Per-folder overrides in the admin UI still win.
 occ config:system:set groupfolders.quota.default --type=integer --value=2147483648 # 2 GiB
 
+# Apps on top of the defaults.
+for app in guests integration_overleaf twofactor_webauthn user_migration; do
+  occ app:install "$app" || occ app:enable "$app"
+done
+occ config:app:set integration_overleaf overleaf_server --value='https://latex.gewis.nl'
+
+occ config:app:set core shareapi_allow_resharing --value=no
+occ config:app:set richdocuments doc_format --value=ooxml
+occ config:app:set privacy readableLocation --value=nl
+occ config:system:set defaultapp --value=files
+occ config:system:set config_preset --type=integer --value=3
+
+# Theming. Every theming:config call bumps the theme cache buster, which makes browsers
+# download the theme again, so values are only written when they differ.
+theme() {
+  [ "$(occ config:app:get theming "$1" 2>/dev/null)" = "$2" ] || occ theming:config "$1" "$2"
+}
+theme name 'GEWIS Cloud'
+theme slogan 'The GEWIS Cloud Environment'
+theme url "${OVERWRITECLIURL%/}/"
+theme primary_color '#D40000'
+theme background_color '#D40000'
+# A plain background colour instead of an image.
+[ "$(occ config:app:get theming backgroundMime 2>/dev/null)" = backgroundColor ] ||
+  occ theming:config background backgroundColor
+occ config:app:set theming disable-user-theming --type=boolean --value=true
+
+# Images come from base/theming via the nextcloud-theming ConfigMap mounted at /theming.
+# Re-uploaded only when the file changes; its checksum is kept in our own app config key.
+theme_image() {
+  sum=$(sha256sum "$2" | cut -d' ' -f1)
+  [ "$(occ config:app:get cbc_deployment "theming_$1_sha256" 2>/dev/null)" = "$sum" ] && return 0
+  occ theming:config "$1" "$2"
+  occ config:app:set cbc_deployment "theming_$1_sha256" --value="$sum"
+}
+theme_image logo /theming/logo.png
+theme_image logoheader /theming/logo.png
+
 if [ -z "${OIDC_CLIENT_SECRET:-}" ] || [ "${OIDC_CLIENT_SECRET}" = 'REPLACE_ME' ]; then
   echo '==> OIDC_CLIENT_SECRET unset, skipping user_oidc configuration'
   exit 0

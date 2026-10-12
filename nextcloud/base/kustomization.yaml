@@ -14,3 +14,6 @@ configMapGenerator:
   - name: nextcloud-scripts
     files:
       - scripts/team-folders.sh
+  - name: nextcloud-theming
+    files:
+      - theming/logo.png

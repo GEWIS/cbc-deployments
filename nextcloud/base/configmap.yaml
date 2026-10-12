@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nextcloud-env-config
+data:
+  # Shared, non-secret settings for the nextcloud, cron and team-folders containers.
+  # Per-environment keys are added by overlays/<env>/patches/nextcloud-config.yaml:
+  # POSTGRES_DB, POSTGRES_USER, NEXTCLOUD_TRUSTED_DOMAINS, OVERWRITEHOST,
+  # OVERWRITECLIURL, OIDC_CLIENT_ID (and OBJECTSTORE_S3_* in production).
+  # Secrets (passwords, OIDC client secret) live in the nextcloud-secrets SealedSecret.
+
+  # Database (credentials in nextcloud-secrets)
+  POSTGRES_HOST: pg01.db.gewis.nl:5432
+  PGSSLMODE: require
+  PGSSLCERT: /tmp/postgresql.crt
+
+  # Nextcloud
+  NEXTCLOUD_ADMIN_USER: cbclocal
+  NEXTCLOUD_DATA_DIR: /var/www/data
+  NEXTCLOUD_INIT_HTACCESS: "true"
+  OVERWRITEPROTOCOL: https
+  TRUSTED_PROXIES: 10.0.0.0/8
+
+  # Apache / PHP
+  APACHE_DISABLE_REWRITE_IP: "1"
+  APACHE_BODY_LIMIT: "0"
+  PHP_MEMORY_LIMIT: 1G
+  PHP_UPLOAD_LIMIT: 16G
+  PHP_OPCACHE_MEMORY_CONSUMPTION: "256"
+
+  # Redis (password in nextcloud-secrets)
+  REDIS_HOST: redis
+
+  TZ: Europe/Amsterdam

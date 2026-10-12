@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nextcloud-env-config
+data:
+  POSTGRES_DB: nextcloudtest_db
+  POSTGRES_USER: svc-nextcloud-test
+  NEXTCLOUD_TRUSTED_DOMAINS: nextcloud.test.gewis.nl
+  OVERWRITEHOST: nextcloud.test.gewis.nl
+  OVERWRITECLIURL: https://nextcloud.test.gewis.nl
+  OIDC_CLIENT_ID: nextcloud-test

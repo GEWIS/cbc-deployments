@@ -5,8 +5,7 @@ resources:
   - pvc.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
-  - secrets.yaml
+  - configmap.yaml
 
 configMapGenerator:
   - name: nextcloud-hooks

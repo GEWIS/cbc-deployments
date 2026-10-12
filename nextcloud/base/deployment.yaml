@@ -36,48 +36,9 @@ spec:
         - name: nextcloud
           image: nextcloud:34.0.4-apache
           imagePullPolicy: IfNotPresent
-          env: &nextcloud-env
-            - name: POSTGRES_HOST
-              value: pg01.db.gewis.nl:5432
-            - name: POSTGRES_DB
-              value: nextcloudtest_db
-            - name: POSTGRES_USER
-              value: svc-nextcloud-test
-            - name: PGSSLMODE
-              value: require
-            - name: PGSSLCERT
-              value: /tmp/postgresql.crt
-            - name: NEXTCLOUD_ADMIN_USER
-              value: cbclocal
-            - name: NEXTCLOUD_DATA_DIR
-              value: /var/www/data
-            - name: NEXTCLOUD_TRUSTED_DOMAINS
-              value: nextcloud.test.gewis.nl
-            - name: NEXTCLOUD_INIT_HTACCESS
-              value: 'true'
-            - name: OVERWRITEHOST
-              value: nextcloud.test.gewis.nl
-            - name: OVERWRITEPROTOCOL
-              value: https
-            - name: OVERWRITECLIURL
-              value: https://nextcloud.test.gewis.nl
-            - name: TRUSTED_PROXIES
-              value: 10.0.0.0/8
-            - name: APACHE_DISABLE_REWRITE_IP
-              value: '1'
-            - name: APACHE_BODY_LIMIT
-              value: '0'
-            - name: PHP_MEMORY_LIMIT
-              value: 1G
-            - name: PHP_UPLOAD_LIMIT
-              value: 16G
-            - name: PHP_OPCACHE_MEMORY_CONSUMPTION
-              value: '256'
-            - name: REDIS_HOST
-              value: redis
-            - name: TZ
-              value: Europe/Amsterdam
-          envFrom: &nextcloud-secrets
+          envFrom: &nextcloud-envfrom
+            - configMapRef:
+                name: nextcloud-env-config
             - secretRef:
                 name: nextcloud-secrets
           ports:
@@ -117,8 +78,7 @@ spec:
           imagePullPolicy: IfNotPresent
           command:
             - /cron.sh
-          env: *nextcloud-env
-          envFrom: *nextcloud-secrets
+          envFrom: *nextcloud-envfrom
           volumeMounts:
             - mountPath: /var/www/html
               name: html
@@ -143,8 +103,7 @@ spec:
           securityContext:
             runAsUser: 33
             runAsGroup: 33
-          env: *nextcloud-env
-          envFrom: *nextcloud-secrets
+          envFrom: *nextcloud-envfrom
           volumeMounts:
             - mountPath: /var/www/html
               name: html
@@ -229,11 +188,6 @@ spec:
           image: collabora/code:26.04.4.2.1
           imagePullPolicy: IfNotPresent
           env:
-            - name: aliasgroup1
-              value: https://nextcloud.test.gewis.nl:443,http://nextcloud:80
-            # Served on the Nextcloud host through the path routes in ingress.yaml.
-            - name: server_name
-              value: nextcloud.test.gewis.nl
             - name: extra_params
               value: --o:ssl.enable=false --o:ssl.termination=true
             - name: dictionaries

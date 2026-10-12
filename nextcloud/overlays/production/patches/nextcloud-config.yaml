@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nextcloud-env-config
+data:
+  POSTGRES_HOST: postgres.net.gewis.nl
+  PGSSLMODE: verify-full
+  PGSSLROOTCERT: /etc/ssl/certs/ca-certificates.crt
+  NEXTCLOUD_TRUSTED_DOMAINS: cloud.gewis.nl
+  OVERWRITEHOST: cloud.gewis.nl
+  OVERWRITECLIURL: https://cloud.gewis.nl
+  OIDC_CLIENT_ID: nextcloud-prod
+  OBJECTSTORE_S3_HOST: s3.gewis.nl
+  OBJECTSTORE_S3_PORT: "443"
+  OBJECTSTORE_S3_SSL: "true"
+  OBJECTSTORE_S3_USEPATH_STYLE: "true"
+  OBJECTSTORE_S3_AUTOCREATE: "false"

@@ -1,0 +1,40 @@
+# envFrom is replaced as a whole, so every container lists all sources. None of them is
+# optional: without nextcloud-s3 Nextcloud would install onto local disk instead of S3.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud
+spec:
+  template:
+    spec:
+      containers:
+        - name: nextcloud
+          envFrom:
+            - configMapRef:
+                name: nextcloud-env-config
+            - secretRef:
+                name: nextcloud-secrets
+            - secretRef:
+                name: nextcloud-db
+            - secretRef:
+                name: nextcloud-s3
+        - name: cron
+          envFrom:
+            - configMapRef:
+                name: nextcloud-env-config
+            - secretRef:
+                name: nextcloud-secrets
+            - secretRef:
+                name: nextcloud-db
+            - secretRef:
+                name: nextcloud-s3
+        - name: team-folders
+          envFrom:
+            - configMapRef:
+                name: nextcloud-env-config
+            - secretRef:
+                name: nextcloud-secrets
+            - secretRef:
+                name: nextcloud-db
+            - secretRef:
+                name: nextcloud-s3

@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collabora
+spec:
+  template:
+    spec:
+      containers:
+        - name: collabora
+          env:
+            - name: aliasgroup1
+              value: https://cloud.gewis.nl:443,http://nextcloud:80
+            # Served on the Nextcloud host through the path routes in traefik/ingressroutes.yaml.
+            - name: server_name
+              value: cloud.gewis.nl

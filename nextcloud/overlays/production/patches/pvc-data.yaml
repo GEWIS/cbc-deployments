@@ -1,0 +1,9 @@
+# File contents live in S3; the data dir only holds nextcloud.log and the .ocdata marker.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data
+spec:
+  resources:
+    requests:
+      storage: 1Gi

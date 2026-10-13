@@ -108,7 +108,7 @@ spec:
             - name: MM_EMAILSETTINGS_ENABLESMTPAUTH
               value: 'true'
             - name: MM_EMAILSETTINGS_FEEDBACKEMAIL
-              value: svc-mattermost-prod@gewis.nl
+              value: mattermost@gewis.nl
             - name: MM_EMAILSETTINGS_FEEDBACKNAME
               value: GEWIS Mattermost
             - name: MM_EMAILSETTINGS_ENABLESIGNUPWITHEMAIL

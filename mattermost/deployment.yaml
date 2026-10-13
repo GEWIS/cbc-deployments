@@ -83,6 +83,11 @@ spec:
               value: $(MM_SQLSETTINGS_DATASOURCE)
             - name: MM_SQLSETTINGS_DRIVERNAME
               value: postgres
+            # The admin container uses local mode, the unauthenticated API on this socket.
+            - name: MM_SERVICESETTINGS_ENABLELOCALMODE
+              value: 'true'
+            - name: MM_SERVICESETTINGS_LOCALMODESOCKETLOCATION
+              value: /local/mattermost.socket
             - name: MM_SERVICESETTINGS_SITEURL
               value: https://mattermost.gewis.nl
             - name: MM_SERVICESETTINGS_TRUSTEDPROXYIPHEADER
@@ -192,6 +197,60 @@ spec:
             failureThreshold: 5
             periodSeconds: 30
             timeoutSeconds: 10
+          volumeMounts:
+            - mountPath: /local
+              name: local
+        # Mattermost has no admin bootstrap setting, so this creates the local cbclocal system
+        # admin with the password from the secret once, and restores its roles on every start.
+        - name: admin
+          image: curlimages/curl:8.22.0
+          imagePullPolicy: IfNotPresent
+          # The socket is only accessible to the mattermost user.
+          securityContext:
+            runAsUser: 2000
+            runAsGroup: 2000
+          command:
+            - sh
+            - -euc
+            - |
+              api() {
+                curl -s --unix-socket /local/mattermost.socket "$@"
+              }
+              url=http://localhost/api/v4
+              until status=$(api -o /tmp/user.json -w '%{http_code}' "$url/users/username/cbclocal"); do
+                echo "==> waiting for Mattermost"
+                sleep 5
+              done
+              case $status in
+                200) ;;
+                404)
+                  password=$(printf '%s' "$ADMIN_PASSWORD" | sed 's/[\\"]/\\&/g')
+                  api -fS -o /tmp/user.json \
+                    -d "{\"username\": \"cbclocal\", \"email\": \"cbc@gewis.nl\", \"password\": \"$password\"}" \
+                    "$url/users"
+                  ;;
+                *)
+                  echo "==> looking up cbclocal failed with HTTP $status: $(cat /tmp/user.json)"
+                  exit 1
+                  ;;
+              esac
+              id=$(grep -o '"id":"[a-z0-9]*"' /tmp/user.json | head -n 1 | cut -d '"' -f 4)
+              api -fS -o /dev/null -X PUT -d '{"roles": "system_admin system_user"}' "$url/users/$id/roles"
+              echo "==> cbclocal ($id) is a system admin"
+              trap 'exit 0' TERM
+              while :; do
+                sleep 3600 &
+                wait $!
+              done
+          env:
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mattermost-secrets
+                  key: ADMIN_PASSWORD
+          volumeMounts:
+            - mountPath: /local
+              name: local
       dnsConfig:
         options:
           - name: ndots
@@ -200,6 +259,8 @@ spec:
         - name: theming
           configMap:
             name: mattermost-theming
+        - name: local
+          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment

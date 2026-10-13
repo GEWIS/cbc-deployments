@@ -8,3 +8,8 @@ resources:
   - secrets.yaml
   - s3-external-secret.yaml
   - postgres-external-secret.yaml
+
+configMapGenerator:
+  - name: mattermost-theming
+    files:
+      - brand-image.png=theming/GEWIS Logo.png

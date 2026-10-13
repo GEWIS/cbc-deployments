@@ -19,8 +19,10 @@ spec:
       # file store (S3), so placing the pinned bundle there is all it takes to install or upgrade it.
       # The plugin only discovers Keycloak when it activates and never retries, so Mattermost
       # must not start while Keycloak is unreachable.
+      # The System Console stores an uploaded brand image as brand/image.png in the file store and
+      # Mattermost serves that file as-is, so writing it there on every start pins it to git.
       initContainers:
-        - name: oidc-plugin
+        - name: file-store
           image: curlimages/curl:8.22.0
           imagePullPolicy: IfNotPresent
           command:
@@ -28,16 +30,19 @@ spec:
             - -euc
             - |
               s3() {
+                key=$1
+                shift
                 curl -fs --aws-sigv4 "aws:amz:$MM_FILESETTINGS_AMAZONS3REGION:s3" \
                   --user "$MM_FILESETTINGS_AMAZONS3ACCESSKEYID:$MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY" \
-                  "$@" "https://$MM_FILESETTINGS_AMAZONS3ENDPOINT/$MM_FILESETTINGS_AMAZONS3BUCKET/plugins/mattermost-oidc.tar.gz"
+                  "$@" "https://$MM_FILESETTINGS_AMAZONS3ENDPOINT/$MM_FILESETTINGS_AMAZONS3BUCKET/$key"
               }
               bundle=/tmp/mattermost-oidc.tar.gz
-              if ! { s3 -o "$bundle" && echo "$PLUGIN_SHA256  $bundle" | sha256sum -c -s; }; then
+              if ! { s3 plugins/mattermost-oidc.tar.gz -o "$bundle" && echo "$PLUGIN_SHA256  $bundle" | sha256sum -c -s; }; then
                 curl -fsSL -o "$bundle" "$PLUGIN_URL"
                 echo "$PLUGIN_SHA256  $bundle" | sha256sum -c -
-                s3 -S -T "$bundle"
+                s3 plugins/mattermost-oidc.tar.gz -S -T "$bundle"
               fi
+              s3 brand/image.png -S -T /theming/brand-image.png
               until curl -fsS -o /dev/null "$OIDC_ISSUER/.well-known/openid-configuration"; do
                 echo "==> waiting for $OIDC_ISSUER"
                 sleep 5
@@ -56,6 +61,9 @@ spec:
             # Must match MM_FILESETTINGS_AMAZONS3ENDPOINT below.
             - name: MM_FILESETTINGS_AMAZONS3ENDPOINT
               value: s3.gewis.nl
+          volumeMounts:
+            - mountPath: /theming
+              name: theming
       containers:
         - name: mattermost
           image: mattermost/mattermost-team-edition:11.11.1
@@ -103,8 +111,41 @@ spec:
               value: svc-mattermost-prod@gewis.nl
             - name: MM_EMAILSETTINGS_FEEDBACKNAME
               value: GEWIS Mattermost
-            # Accounts only come from Keycloak; the plugin creates them on first login.
             - name: MM_EMAILSETTINGS_ENABLESIGNUPWITHEMAIL
+              value: 'false'
+            - name: MM_EMAILSETTINGS_ENABLESIGNINWITHEMAIL
+              value: 'false'
+            # Only local accounts have a password.
+            - name: MM_EMAILSETTINGS_ENABLESIGNINWITHUSERNAME
+              value: 'true'
+            - name: MM_TEAMSETTINGS_ENABLEUSERCREATION
+              value: 'false'
+            - name: MM_SERVICESETTINGS_ENABLEEMAILINVITATIONS
+              value: 'false'
+            - name: MM_PASSWORDSETTINGS_ENABLEFORGOTLINK
+              value: 'false'
+            - name: MM_TEAMSETTINGS_SITENAME
+              value: GEWIS Mattermost
+            - name: MM_TEAMSETTINGS_CUSTOMDESCRIPTIONTEXT
+              value: The GEWIS Mattermost deployment
+            # The image itself is uploaded by the file-store init container.
+            - name: MM_TEAMSETTINGS_ENABLECUSTOMBRAND
+              value: 'true'
+            - name: MM_TEAMSETTINGS_CUSTOMBRANDTEXT
+              value: Wie dit leest trekt een bak!
+            - name: MM_SUPPORTSETTINGS_ENABLEASKCOMMUNITYLINK
+              value: 'false'
+            - name: MM_SUPPORTSETTINGS_ALLOWDOWNLOADLOGS
+              value: 'false'
+            - name: MM_LOCALIZATIONSETTINGS_AVAILABLELOCALES
+              value: en
+            - name: MM_TEAMSETTINGS_RESTRICTDIRECTMESSAGE
+              value: team
+            - name: MM_TEAMSETTINGS_TEAMMATENAMEDISPLAY
+              value: full_name
+            - name: MM_AIRECAPSETTINGS_ENABLE
+              value: 'false'
+            - name: MM_ANNOUNCEMENTSETTINGS_USERNOTICESENABLED
               value: 'false'
             # Replaces all plugin states: Playbooks needs a Professional licence, Calls needs
             # UDP 8443 exposed and AI needs an LLM backend.
@@ -155,6 +196,10 @@ spec:
         options:
           - name: ndots
             value: '1'
+      volumes:
+        - name: theming
+          configMap:
+            name: mattermost-theming
 ---
 apiVersion: apps/v1
 kind: Deployment

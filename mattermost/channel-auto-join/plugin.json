@@ -1,0 +1,9 @@
+{
+  "id": "channel-auto-join",
+  "name": "Channel Auto-Join",
+  "description": "Adds every active team member to each new public channel.",
+  "version": "1.0.0",
+  "server": {
+    "executable": "server/plugin"
+  }
+}

@@ -17,11 +17,74 @@ spec:
       # Team Edition has no SSO; the mattermost-oidc plugin adds Keycloak login. On every start
       # Mattermost wipes its local plugin dirs and reinstalls the bundles from plugins/ in the
       # file store (S3), so placing the pinned bundle there is all it takes to install or upgrade it.
-      # The plugin only discovers Keycloak when it activates and never retries, so Mattermost
+      # The OIDC plugin only discovers Keycloak when it activates and never retries, so Mattermost
       # must not start while Keycloak is unreachable.
+      # The channel-auto-join plugin (source in channel-auto-join/) adds every team member to new
+      # public channels. Upstream has no such feature, so it is built here, but only when the stored
+      # bundle was built from other source or another Go toolchain.
       # The System Console stores an uploaded brand image as brand/image.png in the file store and
       # Mattermost serves that file as-is, so writing it there on every start pins it to git.
       initContainers:
+        - name: plugin-cache
+          image: curlimages/curl:8.22.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -euc
+            - |
+              curl -fs --aws-sigv4 "aws:amz:$MM_FILESETTINGS_AMAZONS3REGION:s3" \
+                --user "$MM_FILESETTINGS_AMAZONS3ACCESSKEYID:$MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY" \
+                -o /plugins/stored.tar.gz \
+                "https://$MM_FILESETTINGS_AMAZONS3ENDPOINT/$MM_FILESETTINGS_AMAZONS3BUCKET/plugins/channel-auto-join.tar.gz" ||
+                echo "==> no stored channel-auto-join bundle"
+          envFrom:
+            - secretRef:
+                name: mattermost-s3
+          env:
+            # Must match MM_FILESETTINGS_AMAZONS3ENDPOINT below.
+            - name: MM_FILESETTINGS_AMAZONS3ENDPOINT
+              value: s3.gewis.nl
+          volumeMounts:
+            - mountPath: /plugins
+              name: plugins
+        # Writes /plugins/channel-auto-join.tar.gz only when the stored bundle is outdated. The
+        # bundle records a hash of the source and `go version`; go.sum pins the dependencies.
+        - name: channel-auto-join
+          image: golang:1.27.2-alpine
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65532
+          command:
+            - sh
+            - -euc
+            - |
+              # Go ignores a go.mod directly in the temp root, so build in a subdirectory.
+              mkdir /tmp/src && cp -L /src/* /tmp/src && cd /tmp/src
+              hash=$({ go version; cat go.mod go.sum main.go plugin.json; } | sha256sum | cut -d ' ' -f 1)
+              stored=$(tar -xzOf /plugins/stored.tar.gz channel-auto-join/source.sha256 2>/dev/null || true)
+              if [ "$stored" = "$hash" ]; then
+                echo "==> stored channel-auto-join bundle is up to date"
+                exit 0
+              fi
+              bundle=/tmp/bundle/channel-auto-join
+              mkdir -p "$bundle/server"
+              CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o "$bundle/server/plugin" .
+              cp plugin.json "$bundle/"
+              echo "$hash" > "$bundle/source.sha256"
+              tar -czf /plugins/channel-auto-join.tar.gz -C /tmp/bundle channel-auto-join
+          env:
+            - name: GOTOOLCHAIN
+              value: local
+            - name: GOCACHE
+              value: /tmp/go-cache
+            - name: GOPATH
+              value: /tmp/go
+          volumeMounts:
+            - mountPath: /src
+              name: channel-auto-join
+            - mountPath: /plugins
+              name: plugins
         - name: file-store
           image: curlimages/curl:8.22.0
           imagePullPolicy: IfNotPresent
@@ -43,6 +106,9 @@ spec:
                 s3 plugins/mattermost-oidc.tar.gz -S -T "$bundle"
               fi
               s3 brand/image.png -S -T /theming/brand-image.png
+              if [ -f /plugins/channel-auto-join.tar.gz ]; then
+                s3 plugins/channel-auto-join.tar.gz -S -T /plugins/channel-auto-join.tar.gz
+              fi
               until curl -fsS -o /dev/null "$OIDC_ISSUER/.well-known/openid-configuration"; do
                 echo "==> waiting for $OIDC_ISSUER"
                 sleep 5
@@ -64,6 +130,8 @@ spec:
           volumeMounts:
             - mountPath: /theming
               name: theming
+            - mountPath: /plugins
+              name: plugins
       containers:
         - name: mattermost
           image: mattermost/mattermost-team-edition:11.11.1
@@ -156,9 +224,9 @@ spec:
             # UDP 8443 exposed and AI needs an LLM backend.
             - name: MM_PLUGINSETTINGS_PLUGINSTATES
               value: >-
-                {"mattermost-oidc": {"Enable": true}, "playbooks": {"Enable": false},
-                "com.mattermost.calls": {"Enable": false}, "mattermost-ai": {"Enable": false},
-                "com.mattermost.nps": {"Enable": false}}
+                {"mattermost-oidc": {"Enable": true}, "channel-auto-join": {"Enable": true},
+                "playbooks": {"Enable": false}, "com.mattermost.calls": {"Enable": false},
+                "mattermost-ai": {"Enable": false}, "com.mattermost.nps": {"Enable": false}}
             # Replaces all plugin settings; unset keys fall back to Go zero values, not plugin defaults.
             - name: MM_PLUGINSETTINGS_PLUGINS
               value: >-
@@ -259,7 +327,12 @@ spec:
         - name: theming
           configMap:
             name: mattermost-theming
+        - name: channel-auto-join
+          configMap:
+            name: mattermost-channel-auto-join
         - name: local
+          emptyDir: {}
+        - name: plugins
           emptyDir: {}
 ---
 apiVersion: apps/v1

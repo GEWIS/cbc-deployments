@@ -13,3 +13,9 @@ configMapGenerator:
   - name: mattermost-theming
     files:
       - brand-image.png=theming/GEWIS Logo.png
+  - name: mattermost-channel-auto-join
+    files:
+      - channel-auto-join/go.mod
+      - channel-auto-join/go.sum
+      - channel-auto-join/main.go
+      - channel-auto-join/plugin.json

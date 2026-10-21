@@ -23,7 +23,7 @@ spec:
       # fails for www-data when it isn't the owner ("Environment not properly prepared").
       initContainers:
         - name: data-permissions
-          image: nextcloud:34.0.4-apache
+          image: nextcloud:34.0.5-apache
           imagePullPolicy: IfNotPresent
           command:
             - sh

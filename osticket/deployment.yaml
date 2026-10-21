@@ -18,7 +18,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
         - name: apache
-          image: ghcr.io/rinkp/osticket-dockerized:1.18.4
+          image: ghcr.io/rinkp/osticket-dockerized:main-patches
           imagePullPolicy: IfNotPresent
           env:
             - name: OST_ADMIN_EMAIL

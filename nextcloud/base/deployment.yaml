@@ -34,7 +34,7 @@ spec:
               name: data
       containers:
         - name: nextcloud
-          image: nextcloud:34.0.4-apache
+          image: nextcloud:34.0.5-apache
           imagePullPolicy: IfNotPresent
           envFrom: &nextcloud-envfrom
             - configMapRef:
@@ -78,7 +78,7 @@ spec:
               name: theming
               readOnly: true
         - name: cron
-          image: nextcloud:34.0.4-apache
+          image: nextcloud:34.0.5-apache
           imagePullPolicy: IfNotPresent
           command:
             - /cron.sh
@@ -91,7 +91,7 @@ spec:
         # Gives every FILES-datas-<share>-RO/-RW group pair (created by user_oidc on
         # login) a team folder.
         - name: team-folders
-          image: nextcloud:34.0.4-apache
+          image: nextcloud:34.0.5-apache
           imagePullPolicy: IfNotPresent
           command:
             - sh

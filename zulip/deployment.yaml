@@ -1,9 +1,12 @@
+# TODO: Remove the /zulip directory after 23/04/2027
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: database
 spec:
-  replicas: 1
+  # Zulip has been replaced with Mattermost
+  replicas: 0
   selector:
     matchLabels:
       io.kompose.service: database
@@ -43,7 +46,8 @@ kind: Deployment
 metadata:
   name: memcached
 spec:
-  replicas: 1
+  # Zulip has been replaced with Mattermost
+  replicas: 0
   selector:
     matchLabels:
       io.kompose.service: memcached
@@ -82,7 +86,8 @@ kind: Deployment
 metadata:
   name: rabbitmq
 spec:
-  replicas: 1
+  # Zulip has been replaced with Mattermost
+  replicas: 0
   selector:
     matchLabels:
       io.kompose.service: rabbitmq
@@ -123,7 +128,8 @@ kind: Deployment
 metadata:
   name: redis
 spec:
-  replicas: 1
+  # Zulip has been replaced with Mattermost
+  replicas: 0
   selector:
     matchLabels:
       io.kompose.service: redis
@@ -164,7 +170,8 @@ kind: Deployment
 metadata:
   name: zulip
 spec:
-  replicas: 1
+  # Zulip has been replaced with Mattermost
+  replicas: 0
   selector:
     matchLabels:
       io.kompose.service: zulip

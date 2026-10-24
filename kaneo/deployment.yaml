@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: kaneo
-          image: ghcr.io/usekaneo/kaneo:2.35.0
+          image: ghcr.io/usekaneo/kaneo:2.47.0
           imagePullPolicy: IfNotPresent
           env:
             - name: KANEO_CLIENT_URL

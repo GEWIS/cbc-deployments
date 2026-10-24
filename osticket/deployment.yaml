@@ -18,11 +18,11 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
         - name: apache
-          image: ghcr.io/rinkp/osticket-dockerized:main-patches
+          image: rinkp/osticket-dockerized:v1.18.4-dockerized0-patches
           imagePullPolicy: IfNotPresent
           env:
             - name: OST_ADMIN_EMAIL
-              value: rink@gewis.nl
+              value: cbc@gewis.nl
             - name: OST_DBHOST
               value: mariadb01.db.gewis.nl
             - name: OST_DBNAME

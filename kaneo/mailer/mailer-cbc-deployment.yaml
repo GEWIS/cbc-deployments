@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: kaneo-mailer-cbc
-          image: ghcr.io/gewis/kaneo-mailer:v1.1.0
+          image: ghcr.io/gewis/kaneo-mailer:1.1.0
           imagePullPolicy: IfNotPresent
           env:
             - name: IMAP_PORT

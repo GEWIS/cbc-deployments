@@ -7,3 +7,5 @@ resources:
   - ingress.yaml
   - secrets.yaml
   - s3-external-secret.yaml
+  - mailer/mailer-cbc-secrets.yaml
+  - mailer/mailer-cbc-deployment.yaml

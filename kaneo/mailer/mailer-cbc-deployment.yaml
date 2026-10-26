@@ -34,7 +34,7 @@ spec:
             - name: IMAP_TLS
               value: 'true'
             - name: IMAP_ROOT
-              value: API
+              value: Shared/cbc@gewis.nl/INBOX/Kaneo-Import
             - name: KANEO_URL
               value: https://kaneo.gewis.nl/api
             - name: POLL_INTERVAL

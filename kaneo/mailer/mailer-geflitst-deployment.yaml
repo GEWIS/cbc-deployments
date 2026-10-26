@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: kaneo-mailer-geflitst
-          image: ghcr.io/gewis/kaneo-mailer:v1.0.0
+          image: ghcr.io/gewis/kaneo-mailer:v1.1.0
           imagePullPolicy: IfNotPresent
           env:
             - name: IMAP_PORT

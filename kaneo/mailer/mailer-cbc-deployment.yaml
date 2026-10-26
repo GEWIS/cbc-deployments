@@ -37,6 +37,8 @@ spec:
               value: Shared/cbc@gewis.nl/INBOX/Kaneo-Import
             - name: KANEO_URL
               value: https://kaneo.gewis.nl/api
+            - name: KANEO_DEFAULT_PROJECT_ID
+              value: t2amukvtu0oon2pbt8m3wydz
             - name: POLL_INTERVAL
               value: '300'
             - name: LOG_LEVEL

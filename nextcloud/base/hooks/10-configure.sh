@@ -43,6 +43,8 @@ until occ richdocuments:activate-config --wopi-url='http://collabora:9980' --cal
   sleep 5
 done
 
+occ app:install forms || occ app:enable forms
+
 # Team folders; scripts/team-folders.sh creates one per FILES-datas-<share> group pair.
 occ app:install groupfolders || occ app:enable groupfolders
 # Quota for team folders left on "Default" (all new ones); resolved on read, so changing

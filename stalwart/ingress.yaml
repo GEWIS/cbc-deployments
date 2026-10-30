@@ -1,0 +1,30 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: stalwart-internal-only
+spec:
+  ipAllowList:
+    sourceRange:
+      - 10.0.0.0/8
+      - 100.64.0.0/10
+      - 131.155.0.0/16
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: stalwart
+  annotations:
+    external-dns.alpha.kubernetes.io/target: router02.net.gewis.nl
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`mail.stalwart.test.gewis.nl`)
+      kind: Rule
+      middlewares:
+        - name: stalwart-internal-only
+      services:
+        - name: stalwart
+          port: 8080
+  tls:
+    secretName: stalwart-tls

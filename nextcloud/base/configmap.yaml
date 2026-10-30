@@ -6,9 +6,9 @@ data:
   # Shared, non-secret settings for the nextcloud, cron and team-folders containers.
   # Per-environment keys are added by overlays/<env>/patches/nextcloud-config.yaml:
   # POSTGRES_DB, POSTGRES_USER, NEXTCLOUD_TRUSTED_DOMAINS, OVERWRITEHOST,
-  # OVERWRITECLIURL, OIDC_CLIENT_ID (and OBJECTSTORE_S3_* in production).
-  # Secrets (passwords, OIDC client secret, SMTP login) live in the nextcloud-secrets
-  # SealedSecret.
+  # OVERWRITECLIURL, OIDC_CLIENT_ID (and OBJECTSTORE_S3_*, TURN_SERVER in production).
+  # Secrets (passwords, OIDC client secret, SMTP login, TURN secret) live in the
+  # nextcloud-secrets SealedSecret.
 
   # Database (credentials in nextcloud-secrets)
   POSTGRES_HOST: pg01.db.gewis.nl:5432

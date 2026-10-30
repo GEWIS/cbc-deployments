@@ -7,6 +7,8 @@ resources:
   - s3-external-secret.yaml
   - postgres-external-secret.yaml
   - traefik/ingressroutes.yaml
+  - coturn/deployment.yaml
+  - coturn/service.yaml
 
 patches:
   - path: patches/nextcloud-config.yaml

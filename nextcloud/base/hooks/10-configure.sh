@@ -45,18 +45,6 @@ done
 
 occ app:install forms || occ app:enable forms
 
-# Talk (chat, voice and video calls). Only production runs a TURN server
-# (overlays/production/coturn); elsewhere calls only work when peers reach each other
-# directly. turn_servers is written only when it differs, since the value contains the
-# secret and occ takes it on the command line; occ echoes it back, so that goes to /dev/null.
-occ app:install spreed || occ app:enable spreed
-if [ -n "${TURN_SERVER:-}" ] && [ -n "${TURN_SECRET:-}" ]; then
-  turn=$(php -r 'echo json_encode([["schemes" => "turn", "server" => getenv("TURN_SERVER"),
-    "secret" => getenv("TURN_SECRET"), "protocols" => "udp,tcp"]]);')
-  [ "$(occ config:app:get spreed turn_servers 2>/dev/null)" = "$turn" ] ||
-    occ config:app:set spreed turn_servers --value="$turn" >/dev/null
-fi
-
 # Team folders; scripts/team-folders.sh creates one per FILES-datas-<share> group pair.
 occ app:install groupfolders || occ app:enable groupfolders
 # Quota for team folders left on "Default" (all new ones); resolved on read, so changing

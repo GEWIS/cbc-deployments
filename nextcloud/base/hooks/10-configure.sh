@@ -53,25 +53,26 @@ occ config:system:set groupfolders.quota.default --type=integer --value=21474836
 
 # Sharing (Administration settings > Sharing). Team folders stay the main way to share;
 # only FILES-datas-TRAIN-RW and admin members may create shares (anyone can receive them).
-# Keys under the core ConfigLexicon (or read with getValueBool) are typed booleans, the
-# rest are 'yes'/'no' strings.
+# No --type: occ keeps a key's stored type (keys saved from the admin UI are "mixed")
+# and would otherwise prompt to change it, which aborts here without a TTY. 'yes'/'no'
+# reads correctly whether the key is a 'yes'/'no' string or a boolean.
 occ config:app:set core shareapi_enabled --value=yes
 occ config:app:set core shareapi_allow_resharing --value=no
 occ config:app:set core shareapi_allow_group_sharing --value=no
 occ config:app:set core shareapi_only_share_with_group_members --value=no
-occ config:app:set core shareapi_allow_view_without_download --type=boolean --value=true
+occ config:app:set core shareapi_allow_view_without_download --value=yes
 occ config:app:set core shareapi_allow_links --value=yes
 occ config:app:set core shareapi_allow_public_upload --value=no
-occ config:app:set core shareapi_allow_federation_on_public_shares --type=boolean --value=false
-occ config:app:set core shareapi_enable_link_password_by_default --type=boolean --value=false
-occ config:app:set core shareapi_enforce_links_password --type=boolean --value=false
+occ config:app:set core shareapi_allow_federation_on_public_shares --value=no
+occ config:app:set core shareapi_enable_link_password_by_default --value=no
+occ config:app:set core shareapi_enforce_links_password --value=no
 occ config:app:set core shareapi_allow_links_exclude_groups --value='[]'
-occ config:app:set core shareapi_allow_custom_tokens --type=boolean --value=true
+occ config:app:set core shareapi_allow_custom_tokens --value=yes
 occ config:app:set core shareapi_exclude_groups --value=allow
 occ config:app:set core shareapi_exclude_groups_list --value='["FILES-datas-TRAIN-RW","admin"]'
 occ config:app:set core shareapi_default_internal_expire_date --value=no
 occ config:app:set core shareapi_default_remote_expire_date --value=no
-occ config:app:set core shareapi_default_expire_date --type=boolean --value=false
+occ config:app:set core shareapi_default_expire_date --value=no
 occ config:app:set richdocuments doc_format --value=ooxml
 occ config:app:set privacy readableLocation --value=nl
 occ config:system:set defaultapp --value=files

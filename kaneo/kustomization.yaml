@@ -9,3 +9,5 @@ resources:
   - s3-external-secret.yaml
   - mailer/mailer-cbc-secrets.yaml
   - mailer/mailer-cbc-deployment.yaml
+  - mailer/mailer-geflitst-secrets.yaml
+  - mailer/mailer-geflitst-deployment.yaml

@@ -79,7 +79,26 @@ occ config:app:set core shareapi_default_expire_date --value=no
 occ config:app:set richdocuments doc_format --value=ooxml
 occ config:app:set privacy readableLocation --value=nl
 occ config:system:set defaultapp --value=files
-occ app:disable dashboard
+# Only files, team folders, sharing, Office, PDF viewer, Text, Forms and Photos are used.
+# Disable the default apps outside that (circles = Teams). Already disabled apps are
+# skipped, so this is safe on every start.
+occ app:disable \
+  app_api \
+  circles \
+  contactsinteraction \
+  dashboard \
+  federation \
+  files_reminders \
+  firstrunwizard \
+  nextcloud_announcements \
+  recommendations \
+  related_resources \
+  support \
+  survey_client \
+  updatenotification \
+  user_status \
+  weather_status \
+  webhook_listeners
 occ config:system:set config_preset --type=integer --value=3
 
 # Theming. Every theming:config call bumps the theme cache buster, which makes browsers

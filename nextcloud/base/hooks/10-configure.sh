@@ -55,7 +55,8 @@ occ app:install groupfolders || occ app:enable groupfolders
 occ config:system:set groupfolders.quota.default --type=integer --value=2147483648 # 2 GiB
 
 # Sharing (Administration settings > Sharing). Team folders stay the main way to share;
-# every user may create shares.
+# only admin group members may create shares (anyone can receive them). They share from
+# the team folders, where scripts/team-folders.sh gives the admin group read and share.
 # No --type: occ keeps a key's stored type (keys saved from the admin UI are "mixed")
 # and would otherwise prompt to change it, which aborts here without a TTY. 'yes'/'no'
 # reads correctly whether the key is a 'yes'/'no' string or a boolean.
@@ -71,8 +72,8 @@ occ config:app:set core shareapi_enable_link_password_by_default --value=no
 occ config:app:set core shareapi_enforce_links_password --value=no
 occ config:app:set core shareapi_allow_links_exclude_groups --value='[]'
 occ config:app:set core shareapi_allow_custom_tokens --value=yes
-occ config:app:set core shareapi_exclude_groups --value=no
-occ config:app:set core shareapi_exclude_groups_list --value='[]'
+occ config:app:set core shareapi_exclude_groups --value=allow
+occ config:app:set core shareapi_exclude_groups_list --value='["admin"]'
 occ config:app:set core shareapi_default_internal_expire_date --value=no
 occ config:app:set core shareapi_default_remote_expire_date --value=no
 occ config:app:set core shareapi_default_expire_date --value=no

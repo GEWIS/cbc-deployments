@@ -22,6 +22,9 @@ for domain in ${NEXTCLOUD_TRUSTED_DOMAINS:-}; do
   i=$((i + 1))
 done
 
+# Keep every app store app on its newest release for this Nextcloud version.
+occ app:update --all
+
 occ config:system:set default_phone_region --value=NL
 occ config:system:set maintenance_window_start --type=integer --value=1
 occ config:app:set files default_quota --value='1 GB'

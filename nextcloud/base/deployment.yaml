@@ -192,7 +192,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
         - name: collabora
-          image: collabora/code:26.04.4.2.1
+          image: collabora/code:26.04.6.1.1
           imagePullPolicy: IfNotPresent
           env:
             - name: extra_params

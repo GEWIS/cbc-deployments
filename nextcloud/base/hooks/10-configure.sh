@@ -77,24 +77,27 @@ occ config:app:set core shareapi_default_internal_expire_date --value=no
 occ config:app:set core shareapi_default_remote_expire_date --value=no
 occ config:app:set core shareapi_default_expire_date --value=no
 occ config:app:set richdocuments doc_format --value=ooxml
-occ config:app:set privacy readableLocation --value=nl
 occ config:system:set defaultapp --value=files
-# Only files, team folders, sharing, Office, PDF viewer, Text, Forms and Photos are used.
+# Only files, team folders, sharing, Office (richdocuments), PDF viewer, Text, Forms and
+# Photos are used.
 # Disable the default apps outside that (circles = Teams). Already disabled apps are
 # skipped, so this is safe on every start.
 occ app:disable \
   app_api \
   circles \
+  comments \
   contactsinteraction \
   dashboard \
   federation \
   files_reminders \
   firstrunwizard \
   nextcloud_announcements \
+  privacy \
   recommendations \
   related_resources \
   support \
   survey_client \
+  systemtags \
   updatenotification \
   user_status \
   weather_status \

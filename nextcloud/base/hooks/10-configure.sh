@@ -76,6 +76,7 @@ occ config:app:set core shareapi_default_expire_date --value=no
 occ config:app:set richdocuments doc_format --value=ooxml
 occ config:app:set privacy readableLocation --value=nl
 occ config:system:set defaultapp --value=files
+occ app:disable dashboard
 occ config:system:set config_preset --type=integer --value=3
 
 # Theming. Every theming:config call bumps the theme cache buster, which makes browsers

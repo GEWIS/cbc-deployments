@@ -1,0 +1,14 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: gewas
+  namespace: gewas-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`aliases.gewis.nl`)
+      kind: Rule
+      services:
+        - name: gewas
+          port: 9404

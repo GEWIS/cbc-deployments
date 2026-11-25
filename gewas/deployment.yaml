@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gewas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: gewas
+  template:
+    metadata:
+      labels:
+        io.kompose.service: gewas
+    spec:
+      containers:
+        - name: gewas
+          image: ghcr.io/gewis/gewas:latest
+          imagePullPolicy: Always
+          env:
+            - name: BASE_URL
+              value: https://mail.gewis.nl/api/v1
+          envFrom:
+            - secretRef:
+                name: gewas-secrets
+          ports:
+            - containerPort: 9404
+              name: main
+              protocol: TCP
